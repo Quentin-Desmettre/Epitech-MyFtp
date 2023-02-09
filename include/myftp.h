@@ -22,10 +22,20 @@
 #include <stdbool.h>
 #include <string.h>
 
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+
 __attribute__((unused)) static const char *USAGE =
     "USAGE: ./myftp port path\n\tport  is the port number on which the server "
     "socket listens\n\tpath  is the path to the home directory for the "
     "Anonymous user\n";
+
+
+typedef struct {
+    int max_pid;
+    fd_set *read_set;
+    fd_set *write_set;
+    fd_set *except_set;
+} fd_data_t;
 
 typedef struct {
     int fd;
@@ -50,3 +60,10 @@ server_t *server_init(args_t const *args);
 
 // Args
 args_t get_args(int ac, char **av);
+
+// Fd data
+int get_first_input_available(fd_data_t *data, server_t *server);
+fd_data_t fd_data_init(server_t *server);
+void fd_data_destroy(fd_data_t *fd_data);
+bool is_in_fd_array(int *fd_array, int fd);
+int fd_array_len(int *fd_array);

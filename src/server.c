@@ -50,4 +50,3 @@ server_t *server_init(args_t const *args)
     }
     return server;
 }
-
