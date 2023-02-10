@@ -21,4 +21,10 @@ typedef struct {
 void *hash_table_find(hash_table_t *h, int key);
 void hash_table_insert(hash_table_t *h, int key, void *value);
 void push_to_stack(stacks_t **stack, int key, void *data);
-hash_table_t *create_hash_table(unsigned size);
+hash_table_t *hash_table_create(unsigned size);
+void hashtable_clear(hash_table_t *map);
+void *hash_table_erase(hash_table_t *map, int key);
+unsigned hash_function(int key, unsigned max);
+
+hash_table_t *get_command_map(void);
+

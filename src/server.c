@@ -33,15 +33,16 @@ static bool server_bind(server_t *server, args_t const *args)
 
 static bool server_listen(server_t *server, args_t const *args)
 {
-    return (listen(server->server_fd, args->port) >= 0) ? true : false;
+    return (listen(server->server_fd, MAX_CLIENTS) >= 0) ? true : false;
 }
 
 server_t *server_init(args_t const *args)
 {
     server_t *server = malloc(sizeof(server_t));
 
-    server->client_fds = malloc(sizeof(int));
-    server->client_fds[0] = -2;
+    server->client_fds = NULL;
+    server->nb_client = 0;
+    server->clients = hash_table_create(MAX_CLIENTS);
     server->server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (server->server_fd < 0 ||
     !server_bind(server, args) || !server_listen(server, args)) {

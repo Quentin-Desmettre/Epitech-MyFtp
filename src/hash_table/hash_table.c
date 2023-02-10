@@ -9,7 +9,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-static unsigned hash_function(int key, unsigned max)
+unsigned hash_function(int key, unsigned max)
 {
     unsigned val = 0;
 

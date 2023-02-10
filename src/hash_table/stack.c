@@ -28,6 +28,25 @@ void *pop_stack(stacks_t **s)
     return data;
 }
 
+void *hash_table_erase(hash_table_t *map, int key)
+{
+    unsigned index = hash_function(key, map->size);
+    stacks_t *s = map->nodes[index];
+    stacks_t *prev = NULL;
+
+    while (s) {
+        if (s->key == key && prev)
+            prev->next = s->next;
+        if (s->key == key && !prev)
+            map->nodes[index] = s->next;
+        if (s->key == key)
+            return pop_stack(&s);
+        prev = s;
+        s = s->next;
+    }
+    return NULL;
+}
+
 void hashtable_clear(hash_table_t *map)
 {
     for (unsigned i = 0; i < map->size; i++)
