@@ -58,7 +58,7 @@ void handle_list_command(char *command, client_t *client, server_t *serv)
 
 hash_table_t *init_command_map(void)
 {
-    hash_table_t *map = hash_table_create(10);
+    hash_table_t *map = hash_table_create(10, str_cmp, str_hash);
 
     hash_table_insert(map, "USER", handle_user_command);
     hash_table_insert(map, "PASS", handle_pass_command);
