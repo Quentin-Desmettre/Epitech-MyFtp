@@ -8,7 +8,7 @@
 #include "hash_table.h"
 #include <stdlib.h>
 
-void push_to_stack(stacks_t **stack, int key, void *data)
+void push_to_stack(stacks_t **stack, void *key, void *data)
 {
     stacks_t *s = malloc(sizeof(stacks_t));
 
@@ -28,7 +28,7 @@ void *pop_stack(stacks_t **s)
     return data;
 }
 
-void *hash_table_erase(hash_table_t *map, int key)
+void *hash_table_erase(hash_table_t *map, void *key)
 {
     unsigned index = hash_function(key, map->size);
     stacks_t *s = map->nodes[index];
