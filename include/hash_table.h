@@ -9,7 +9,7 @@
 
 typedef struct stack {
     void *data;
-    int key;
+    void *key;
     struct stack *next;
 } stacks_t;
 
@@ -18,13 +18,11 @@ typedef struct {
     unsigned size;
 } hash_table_t;
 
-void *hash_table_find(hash_table_t *h, int key);
-void hash_table_insert(hash_table_t *h, int key, void *value);
-void push_to_stack(stacks_t **stack, int key, void *data);
+void *hash_table_find(hash_table_t *h, void *key);
+void hash_table_insert(hash_table_t *h, void *key, void *value);
+void push_to_stack(stacks_t **stack, void *key, void *data);
 hash_table_t *hash_table_create(unsigned size);
 void hashtable_clear(hash_table_t *map);
-void *hash_table_erase(hash_table_t *map, int key);
-unsigned hash_function(int key, unsigned max);
-
-hash_table_t *get_command_map(void);
-
+void *hash_table_erase(hash_table_t *map, void *key);
+unsigned hash_function(void *key, unsigned max);
+hash_table_t *init_command_map(void);

@@ -31,7 +31,7 @@ static bool server_bind(server_t *server, args_t const *args)
     sizeof(server_socket_config)) >= 0) ? true : false;
 }
 
-static bool server_listen(server_t *server, args_t const *args)
+static bool server_listen(server_t *server)
 {
     return (listen(server->server_fd, MAX_CLIENTS) >= 0) ? true : false;
 }
@@ -45,7 +45,7 @@ server_t *server_init(args_t const *args)
     server->clients = hash_table_create(MAX_CLIENTS);
     server->server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (server->server_fd < 0 ||
-    !server_bind(server, args) || !server_listen(server, args)) {
+    !server_bind(server, args) || !server_listen(server)) {
         server_destroy(server);
         return NULL;
     }

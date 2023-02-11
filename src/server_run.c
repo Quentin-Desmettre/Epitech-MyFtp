@@ -20,26 +20,30 @@ client_t *create_client(struct sockaddr_in *client_data)
     };
 
     memcpy(client, &data, sizeof(client_t));
+    return client;
 }
 
 void server_handle_new_connection(server_t *server)
 {
     struct sockaddr_in client_data;
     socklen_t client_data_size = sizeof(client_data);
-    int client_pid = accept(server->server_fd, &client_data, &client_data_size);
+    int client_pid = accept(server->server_fd,
+    (struct sockaddr *)&client_data, &client_data_size);
 
     if (client_pid == -1)
         return;
-    server->client_fds = realloc(server->client_fds, sizeof(int) * (server->nb_client + 1));
+    server->client_fds = realloc(server->client_fds,
+    sizeof(int) * (server->nb_client + 1));
     server->client_fds[server->nb_client] = client_pid;
     server->nb_client++;
-    hash_table_insert(server->clients, client_pid, create_client(&client_data));
-    write(client_pid, RESPONSE_CONNECTED, strlen(RESPONSE_CONNECTED));
+    hash_table_insert(server->clients,
+    HASHCAST(client_pid), create_client(&client_data));
+    dputs(RESPONSE_CONNECTED, client_pid);
 }
 
 void server_disconnect_client(server_t *server, int client_pid)
 {
-    client_t *client = hash_table_erase(server->clients, client_pid);
+    client_t *client = hash_table_erase(server->clients, HASHCAST(client_pid));
 
     if (!client)
         return;
@@ -65,14 +69,23 @@ char *get_available_input(int client_socket, int *available_bytes)
     return input;
 }
 
-char *extract_command_name(client_t *client)
+char *extract_command_name(client_t *client, server_t *serv)
 {
-    char *command_name = malloc(sizeof(char) * (client->i_buf_size + 1));
+    size_t buf_size = client->i_buf_size;
+    char *command_name = malloc(sizeof(char) * (buf_size + 1));
+    char *i_buf = client->i_buf;
 
     command_name[0] = '\0';
-    for (size_t i = 0; i < client->i_buf_size; i++) {
-
+    for (size_t i = 0; i < buf_size; i++) {
+        command_name[i] = client->i_buf[i];
+        command_name[i + 1] = '\0';
+        if (hash_table_find(serv->cmd_map, command_name) &&
+        ((i + 1 < buf_size && i_buf[i + 1] == ' ') ||
+        (i + 2 < buf_size && i_buf[i + 1] == '\r' && i_buf[i + 2] == '\n')))
+            return command_name;
     }
+    free(command_name);
+    return NULL;
 }
 
 void clean_input_buffer(client_t *client)
@@ -85,15 +98,23 @@ void clean_input_buffer(client_t *client)
 void server_handle_command(server_t *server, client_t *client)
 {
     char *command;
-    clean_input_buffer(client);
+    cmd_handler_t handler;
 
-    // Extract the requested command.
-    // To do so, extract all characters until space is encounter, or the "\r\n"
+    clean_input_buffer(client);
+    command = extract_command_name(client, server);
+    if (!command) {
+        dputs(RESPONSE_UNKNOW_CMD, client->fd);
+        return;
+    }
+    put_upper_case(command);
+    handler = hash_table_find(server->cmd_map, command);
+    handler(command, client, server);
+    free(command);
 }
 
 void server_handle_client_input(server_t *server, int client_pid)
 {
-    client_t *client = hash_table_find(server->clients, client_pid);
+    client_t *client = hash_table_find(server->clients, HASHCAST(client_pid));
     char *readable_input;
     int available_bytes;
 
@@ -103,7 +124,7 @@ void server_handle_client_input(server_t *server, int client_pid)
     if (available_bytes < 0)
         return;
     if (available_bytes == 0 ||
-    client->i_buf_size + ABS(available_bytes) > MAX_INPUT_SIZE) {
+    client->i_buf_size + ABS(available_bytes) > MAX_INPUT_SIZE) { // T'abuses frero
         server_disconnect_client(server, client_pid);
         return;
     }
