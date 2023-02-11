@@ -26,6 +26,8 @@ void fd_data_destroy(fd_data_t *fd_data)
 fd_data_t fd_data_init(server_t *server)
 {
     fd_set *read_set = malloc(sizeof(fd_set));
+    fd_set *write_set = NULL;
+    fd_set *except_set = NULL;
     int max_fd = server->server_fd;
 
     FD_ZERO(read_set);
@@ -35,10 +37,8 @@ fd_data_t fd_data_init(server_t *server)
         max_fd = MAX(max_fd, server->client_fds[i]);
     }
     return (fd_data_t) {
-        .max_pid = server->server_fd,
-        .read_set = read_set,
-        .write_set = NULL,
-        .except_set = NULL
+        .max_pid = max_fd, .read_set = read_set,
+        .write_set = write_set, .except_set = except_set
     };
 }
 

@@ -15,7 +15,8 @@ char *extract_command_name(client_t *client, server_t *serv)
 
     command_name[0] = '\0';
     for (size_t i = 0; i < buf_size; i++) {
-        command_name[i] = client->i_buf[i];
+        command_name[i] = (i_buf[i] >= 'a' && i_buf[i] <= 'z')
+        ? i_buf[i] - 32 : i_buf[i];
         command_name[i + 1] = '\0';
         if (hash_table_find(serv->cmd_map, command_name) &&
         ((i + 1 < buf_size && i_buf[i + 1] == ' ') ||
@@ -65,7 +66,7 @@ void server_handle_command(server_t *server, client_t *client)
     }
     put_upper_case(command);
     handler = hash_table_find(server->cmd_map, command);
-    handler(command, client, server);
+    handler(client->i_buf, client, server);
     free(command);
 }
 
@@ -81,13 +82,14 @@ void server_handle_client_input(server_t *server, int client_pid)
     if (available_bytes < 0)
         return;
     if (available_bytes == 0 ||
-    client->i_buf_size + ABS(available_bytes) > MAX_INPUT_SIZE) {
-        server_disconnect_client(server, client_pid);
-        return;
-    }
+    client->i_buf_size + ABS(available_bytes) > MAX_INPUT_SIZE)
+        return server_disconnect_client(server, client_pid);
     append_str(&client->i_buf, &client->i_buf_size,
     readable_input, available_bytes);
     free(readable_input);
     if (str_ends_with(client->i_buf, client->i_buf_size, "\r\n"))
         server_handle_command(server, client);
+    free(client->i_buf);
+    client->i_buf = NULL;
+    client->i_buf_size = 0;
 }

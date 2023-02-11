@@ -42,7 +42,8 @@ server_t *server_init(args_t const *args)
 
     server->client_fds = NULL;
     server->nb_client = 0;
-    server->clients = hash_table_create(MAX_CLIENTS);
+    server->clients = hash_table_create(MAX_CLIENTS, int_cmp, int_hash);
+    server->cmd_map = init_command_map();
     server->server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (server->server_fd < 0 ||
     !server_bind(server, args) || !server_listen(server)) {

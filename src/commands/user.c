@@ -19,15 +19,16 @@ void unlog_client(client_t *client)
 void log_anon_user(client_t *client, char const *anon_dir)
 {
     client->cwd = anon_dir;
+    client->uname = strdup(ANON_USER_LOGIN);
     client->user_data = NULL;
-    client->is_logged_in = true;
-    dputs(RESPONSE_LOGGED_IN, client->fd);
+    dputs(RESPONSE_USER_FOUND, client->fd);
 }
 
-void prepare_log_regular_user(client_t *client, struct passwd *user_data)
+void log_regular_user(client_t *client, struct passwd *user_data, char *uname)
 {
     client->cwd = user_data->pw_dir;
     client->user_data = user_data;
+    client->uname = uname;
     dputs(RESPONSE_USER_FOUND, client->fd);
 }
 
@@ -36,7 +37,7 @@ void handle_user_command(char *command, client_t *client, server_t *serv)
     char *username = strdup(command + 5);
     struct passwd *user;
 
-    if (strlen(username) == 0) {
+    if (strlen(username) <= 2) {
         dputs(RESPONSE_STX_ERROR, client->fd);
         return free(username);
     }
@@ -47,9 +48,8 @@ void handle_user_command(char *command, client_t *client, server_t *serv)
         log_anon_user(client, serv->anon_dir);
         return free(username);
     }
-    user = getpwnam(username);
-    if (user)
-        return prepare_log_regular_user(client, user);
+    if ((user = getpwnam(username)))
+        return log_regular_user(client, user, username);
     dputs(RESPONSE_NOT_LOGGED_IN, client->fd);
     client->last_command = NULL;
     free(username);
