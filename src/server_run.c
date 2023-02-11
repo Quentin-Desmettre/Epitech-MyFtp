@@ -52,7 +52,7 @@ void server_run(server_t *server)
     int first_available_fd;
 
     while (1) {
-        select_timeout = (struct timeval){.tv_sec = 0, .tv_usec = 100};
+        select_timeout = TIMEOUT;
         fd_data_destroy(&fd_data);
         fd_data = fd_data_init(server);
         select_rval = select(fd_data.max_pid + 1, fd_data.read_set,
@@ -62,7 +62,8 @@ void server_run(server_t *server)
         first_available_fd = get_first_input_available(&fd_data, server);
         if (first_available_fd == server->server_fd)
             server_handle_new_connection(server);
-        if (is_in_fd_array(server->client_fds, server->nb_client, first_available_fd))
+        if (is_in_fd_array(server->client_fds,
+        server->nb_client, first_available_fd))
             server_handle_client_input(server, first_available_fd);
     }
 }

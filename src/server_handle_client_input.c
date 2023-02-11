@@ -32,7 +32,8 @@ char *get_available_input(int client_socket, int *available_bytes)
     int bytes_read;
 
     *available_bytes = -1;
-    if (ioctl(client_socket, FIONREAD, available_bytes) == -1 || *available_bytes <= 0)
+    if (ioctl(client_socket, FIONREAD, available_bytes) == -1 ||
+    *available_bytes <= 0)
         return NULL;
     input = malloc(sizeof(char) * (*available_bytes));
     bytes_read = read(client_socket, input, *available_bytes);

@@ -51,6 +51,8 @@ UNUSED static const char *USAGE =
     "socket listens\n\tpath  is the path to the home directory for the "
     "Anonymous user\n";
 
+UNUSED static struct timeval TIMEOUT = {0, 100};
+
 // Structures
 typedef struct {
     int max_pid;
@@ -98,6 +100,7 @@ typedef void (*cmd_handler_t)(char *, client_t *, server_t *);
 void server_destroy(server_t *server);
 struct sockaddr_in get_server_socket_config(args_t const *args);
 server_t *server_init(args_t const *args);
+void server_run(server_t *server);
 void server_disconnect_client(server_t *server, int client_pid);
 void server_handle_client_input(server_t *server, int client_pid);
 
@@ -113,7 +116,8 @@ void remove_fd_from_array(int **array, int *len, int fd);
 
 // Strings
 bool str_ends_with(char *str, int str_len, char *end);
-void append_str(char **str, size_t *str_len, char *to_append, int to_append_len);
+void append_str(char **str,
+size_t *str_len, char *to_append, int to_append_len);
 void dputs(char *str, int fd);
 void put_upper_case(char *str);
 

@@ -23,11 +23,12 @@ static int bad_config(args_t *args, char **av)
 int main(int ac, char **av)
 {
     args_t args = get_args(ac, av);
-    server_t *server = ((args.is_error || args.is_help) ? NULL : server_init(&args));
+    server_t *server =
+    ((args.is_error || args.is_help) ? NULL : server_init(&args));
 
     if (!server)
         return bad_config(&args, av);
-    // server_run(server);
+    server_run(server);
     server_destroy(server);
     return 0;
 }
