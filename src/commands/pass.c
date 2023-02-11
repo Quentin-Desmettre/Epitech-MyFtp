@@ -15,7 +15,7 @@ bool is_valid_password(char const *password, struct passwd *user_data)
 void handle_pass_command(char *command, client_t *client, server_t *serv)
 {
     char *password = strdup(command + 5);
-    char *last_command = client->last_command;
+    const char *last_command = client->last_command;
 
     if (strlen(password) == 0) {
         dputs(RESPONSE_STX_ERROR, client->fd);

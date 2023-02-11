@@ -22,6 +22,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <pwd.h>
+#include <sys/ioctl.h>
 #include "hash_table.h"
 
 // Utils
@@ -67,6 +68,7 @@ typedef struct {
     char *uname;
     char *pswd;
     struct passwd *user_data;
+    struct sockaddr_in client_addr;
 
     char const *cwd;
 
@@ -96,6 +98,8 @@ typedef void (*cmd_handler_t)(char *, client_t *, server_t *);
 void server_destroy(server_t *server);
 struct sockaddr_in get_server_socket_config(args_t const *args);
 server_t *server_init(args_t const *args);
+void server_disconnect_client(server_t *server, int client_pid);
+void server_handle_client_input(server_t *server, int client_pid);
 
 // Args
 args_t get_args(int ac, char **av);
