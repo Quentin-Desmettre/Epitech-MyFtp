@@ -21,6 +21,9 @@ void fd_data_destroy(fd_data_t *fd_data)
     free(fd_data->read_set);
     free(fd_data->write_set);
     free(fd_data->except_set);
+    fd_data->read_set = NULL;
+    fd_data->write_set = NULL;
+    fd_data->except_set = NULL;
 }
 
 fd_data_t fd_data_init(server_t *server)

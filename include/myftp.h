@@ -68,7 +68,6 @@ typedef struct {
     size_t i_buf_size;
 
     char *uname;
-    char *pswd;
     struct passwd *user_data;
     struct sockaddr_in client_addr;
 
@@ -79,6 +78,7 @@ typedef struct {
 } client_t;
 
 typedef struct {
+    bool run;
     int nb_client;
     int server_fd;
     int *client_fds;
@@ -103,6 +103,7 @@ server_t *server_init(args_t const *args);
 void server_run(server_t *server);
 void server_disconnect_client(server_t *server, int client_pid);
 void server_handle_client_input(server_t *server, int client_pid);
+void client_destroy(client_t *client);
 
 // Args
 args_t get_args(int ac, char **av);

@@ -52,5 +52,7 @@ void hashtable_clear(hash_table_t *map)
 {
     for (unsigned i = 0; i < map->size; i++)
         while (map->nodes[i])
-            free(pop_stack(&(map->nodes[i])));
+            pop_stack(&(map->nodes[i]));
+    free(map->nodes);
+    free(map);
 }

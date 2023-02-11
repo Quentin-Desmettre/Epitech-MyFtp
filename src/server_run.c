@@ -41,6 +41,7 @@ void server_disconnect_client(server_t *server, int client_pid)
 
     if (!client)
         return;
+    client_destroy(client);
     close(client_pid);
     remove_fd_from_array(&server->client_fds, &server->nb_client, client_pid);
 }
@@ -50,9 +51,9 @@ void server_run(server_t *server)
     fd_data_t fd_data = {0, NULL, NULL, NULL};
     int select_rval;
     struct timeval select_timeout;
-    int first_available_fd;
+    int first_fd;
 
-    while (1) {
+    while (server->run) {
         select_timeout = TIMEOUT;
         fd_data_destroy(&fd_data);
         fd_data = fd_data_init(server);
@@ -60,11 +61,11 @@ void server_run(server_t *server)
             NULL, NULL, &select_timeout);
         if (select_rval <= 0)
             continue;
-        first_available_fd = get_first_input_available(&fd_data, server);
-        if (first_available_fd == server->server_fd)
+        first_fd = get_first_input_available(&fd_data, server);
+        if (first_fd == server->server_fd)
             server_handle_new_connection(server);
-        if (is_in_fd_array(server->client_fds,
-        server->nb_client, first_available_fd))
-            server_handle_client_input(server, first_available_fd);
+        if (is_in_fd_array(server->client_fds, server->nb_client, first_fd))
+            server_handle_client_input(server, first_fd);
     }
+    fd_data_destroy(&fd_data);
 }

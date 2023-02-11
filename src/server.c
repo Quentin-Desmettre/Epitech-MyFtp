@@ -7,10 +7,27 @@
 
 #include "myftp.h"
 
+void client_destroy(client_t *client)
+{
+    close(client->fd);
+    free(client->i_buf);
+    free(client->uname);
+    free(client);
+}
+
 void server_destroy(server_t *server)
 {
+    client_t *client;
+
+    for (int i = 0; i < server->nb_client; i++) {
+        client = hash_table_erase(server->clients,
+        HASHCAST(server->client_fds[i]));
+        client_destroy(client);
+    }
     free(server->client_fds);
     close(server->server_fd);
+    hashtable_clear(server->clients);
+    hashtable_clear(server->cmd_map);
     free(server);
 }
 
@@ -31,11 +48,6 @@ static bool server_bind(server_t *server, args_t const *args)
     sizeof(server_socket_config)) >= 0) ? true : false;
 }
 
-static bool server_listen(server_t *server)
-{
-    return (listen(server->server_fd, MAX_CLIENTS) >= 0) ? true : false;
-}
-
 server_t *server_init(args_t const *args)
 {
     server_t *server = malloc(sizeof(server_t));
@@ -45,8 +57,9 @@ server_t *server_init(args_t const *args)
     server->clients = hash_table_create(MAX_CLIENTS, int_cmp, int_hash);
     server->cmd_map = init_command_map();
     server->server_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (server->server_fd < 0 ||
-    !server_bind(server, args) || !server_listen(server)) {
+    server->run = true;
+    if (server->server_fd < 0 || !server_bind(server, args) ||
+    listen(server->server_fd, MAX_CLIENTS) < 0) {
         server_destroy(server);
         return NULL;
     }
