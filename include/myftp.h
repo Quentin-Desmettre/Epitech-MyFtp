@@ -23,6 +23,7 @@
 #include <string.h>
 #include <pwd.h>
 #include <sys/ioctl.h>
+#include <linux/limits.h>
 #include "hash_table.h"
 
 // Utils
@@ -45,6 +46,9 @@
 #define RESPONSE_USER_FOUND "331 User name okay, need password.\r\n"
 
 #define RESPONSE_INVALID_SEQUENCE "503 Bad sequence of commands.\r\n"
+
+#define RESPONSE_NOTHING_DONE "550 Requested action not taken.\r\n"
+#define RESPONSE_FILE_ACT_DONE "250 Requested file action okay, completed.\r\n"
 
 UNUSED static const char *USAGE =
     "USAGE: ./myftp port path\n\tport  is the port number on which the server "
@@ -71,7 +75,7 @@ typedef struct {
     struct passwd *user_data;
     struct sockaddr_in client_addr;
 
-    char const *cwd;
+    char cwd[PATH_MAX];
 
     bool is_logged_in;
     char const *last_command;
@@ -125,3 +129,7 @@ void put_upper_case(char *str);
 // Handlers
 void handle_pass_command(char *command, client_t *client, server_t *serv);
 void handle_user_command(char *command, client_t *client, server_t *serv);
+void handle_cwd_command(char *command,
+client_t *client, UNUSED server_t *serv);
+void handle_cdup_command(UNUSED char *command,
+client_t *client, server_t *serv);

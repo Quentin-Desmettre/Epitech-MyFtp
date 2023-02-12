@@ -16,7 +16,7 @@ void unlog_client(client_t *client)
 
 void log_anon_user(client_t *client, char const *anon_dir)
 {
-    client->cwd = anon_dir;
+    strcpy(client->cwd, anon_dir);
     client->uname = strdup(ANON_USER_LOGIN);
     client->user_data = NULL;
     dputs(RESPONSE_USER_FOUND, client->fd);
@@ -24,7 +24,7 @@ void log_anon_user(client_t *client, char const *anon_dir)
 
 void log_regular_user(client_t *client, struct passwd *user_data, char *uname)
 {
-    client->cwd = user_data->pw_dir;
+    strcpy(client->cwd, user_data->pw_dir);
     client->user_data = user_data;
     client->uname = uname;
     dputs(RESPONSE_USER_FOUND, client->fd);

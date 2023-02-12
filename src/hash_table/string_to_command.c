@@ -5,16 +5,7 @@
 ** string_to_command.c
 */
 
-#include "hash_table.h"
 #include "myftp.h"
-
-void handle_cwd_command(char *command, client_t *client, server_t *serv)
-{
-}
-
-void handle_cdup_command(char *command, client_t *client, server_t *serv)
-{
-}
 
 void handle_quit_command(char *command, client_t *client, server_t *serv)
 {

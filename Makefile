@@ -1,5 +1,5 @@
 ##
-## EPITECH PROJECT, __YEAR__
+## EPITECH PROJECT, 2023
 ## myftp
 ## File description:
 ## Makefile

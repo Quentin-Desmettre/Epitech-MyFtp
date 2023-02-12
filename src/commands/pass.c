@@ -9,7 +9,7 @@
 
 // The process of checking if a password if ok can be long.
 // To optimize the server, we fork this process
-void check_password(char *password, client_t *client, server_t *serv)
+void check_password(char *password, client_t *client)
 {
     int pid = fork();
     char *command;
@@ -30,9 +30,9 @@ void check_password(char *password, client_t *client, server_t *serv)
     free(command);
 }
 
-void handle_pass_command(char *command, client_t *client, server_t *serv)
+void handle_pass_command(char *command,
+client_t *client, UNUSED server_t *serv)
 {
-    printf("Handling PASS command\n");
     char *password = strdup(command + 5);
     const char *last_command = client->last_command;
     if (strlen(password) <= 2 && strcmp(client->uname, ANON_USER_LOGIN)) {
@@ -47,5 +47,5 @@ void handle_pass_command(char *command, client_t *client, server_t *serv)
     client->last_command = "PASS";
     if (!last_command || strcmp(last_command, "USER"))
         return free(password), dputs(RESPONSE_INVALID_SEQUENCE, client->fd);
-    check_password(password, client, serv);
+    check_password(password, client);
 }
