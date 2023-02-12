@@ -73,13 +73,11 @@ void server_handle_command(server_t *server, client_t *client)
 void server_handle_client_input(server_t *server, int client_pid)
 {
     client_t *client = hash_table_find(server->clients, HASHCAST(client_pid));
-    char *readable_input;
     int available_bytes;
+    char *readable_input = (client ?
+    get_available_input(client_pid, &available_bytes) : 0);
 
-    if (!client)
-        return;
-    readable_input = get_available_input(client_pid, &available_bytes);
-    if (available_bytes < 0)
+    if (!client || available_bytes < 0)
         return;
     if (available_bytes == 0 ||
     client->i_buf_size + ABS(available_bytes) > MAX_INPUT_SIZE)
@@ -89,7 +87,9 @@ void server_handle_client_input(server_t *server, int client_pid)
     free(readable_input);
     if (str_ends_with(client->i_buf, client->i_buf_size, "\r\n"))
         server_handle_command(server, client);
-    free(client->i_buf);
-    client->i_buf = NULL;
-    client->i_buf_size = 0;
+    if (hash_table_find(server->clients, HASHCAST(client_pid)) == client) {
+        free(client->i_buf);
+        client->i_buf = NULL;
+        client->i_buf_size = 0;
+    }
 }

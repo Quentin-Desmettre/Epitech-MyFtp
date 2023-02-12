@@ -39,7 +39,6 @@
 #define RESPONSE_CONNECTED "220 FTP connection ready.\r\n"
 #define RESPONSE_UNKNOW_CMD "500 Syntax error, command unrecognized.\r\n"
 
-
 #define RESPONSE_STX_ERROR "501 Syntax error in parameters or arguments.\r\n"
 #define RESPONSE_LOGGED_IN "230 User logged in, proceed.\r\n"
 #define RESPONSE_NOT_LOGGED_IN "530 Not logged in.\r\n"
@@ -49,6 +48,8 @@
 
 #define RESPONSE_NOTHING_DONE "550 Requested action not taken.\r\n"
 #define RESPONSE_FILE_ACT_DONE "250 Requested file action okay, completed.\r\n"
+
+#define RESPONSE_CLOSING "221 Service closing control connection.\r\n"
 
 UNUSED static const char *USAGE =
     "USAGE: ./myftp port path\n\tport  is the port number on which the server "
@@ -88,7 +89,7 @@ typedef struct {
     int *client_fds;
     hash_table_t *clients;
     hash_table_t *cmd_map;
-    char *anon_dir;
+    char const *anon_dir;
 } server_t;
 
 typedef struct {
@@ -133,3 +134,4 @@ void handle_cwd_command(char *command,
 client_t *client, UNUSED server_t *serv);
 void handle_cdup_command(UNUSED char *command,
 client_t *client, server_t *serv);
+void handle_quit_command(char *command, client_t *client, server_t *serv);

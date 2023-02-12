@@ -58,6 +58,7 @@ server_t *server_init(args_t const *args)
     server->cmd_map = init_command_map();
     server->server_fd = socket(AF_INET, SOCK_STREAM, 0);
     server->run = true;
+    server->anon_dir = args->anon_home_dir;
     if (server->server_fd < 0 || !server_bind(server, args) ||
     listen(server->server_fd, MAX_CLIENTS) < 0) {
         server_destroy(server);
