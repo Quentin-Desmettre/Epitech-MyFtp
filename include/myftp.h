@@ -135,3 +135,4 @@ client_t *client, UNUSED server_t *serv);
 void handle_cdup_command(UNUSED char *command,
 client_t *client, server_t *serv);
 void handle_quit_command(char *command, client_t *client, server_t *serv);
+void handle_dele_command(char *command, client_t *client, server_t *serv);
