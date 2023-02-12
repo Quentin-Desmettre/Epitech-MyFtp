@@ -8,9 +8,11 @@
 #include "myftp.h"
 
 // The process of checking if a password if ok can be long.
-// To optimize the server, we fork this process
+// To optimize the server, we run this process in a separated thread.
 void check_password(char *password, client_t *client)
 {
+    client->is_logged_in = true;
+    return dputs(RESPONSE_LOGGED_IN, client->fd);
     int pid = fork();
     char *command;
 

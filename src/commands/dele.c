@@ -13,6 +13,8 @@ client_t *client, UNUSED server_t *serv)
     char *cmd = strdup(command + 5);
     char *filePath;
 
+    if (!client->is_logged_in)
+        return free(cmd), dputs(RESPONSE_NOT_LOGGED_IN, client->fd);
     if (strlen(cmd) <= 2 || command[4] != ' ')
         return free(cmd), dputs(RESPONSE_UNKNOW_CMD, client->fd);
     cmd[strlen(cmd) - 2] = '\0';

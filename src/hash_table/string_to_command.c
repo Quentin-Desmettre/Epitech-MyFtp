@@ -8,43 +8,12 @@
 #include "myftp.h"
 #include "help_messages.h"
 
-void handle_pwd_command(char *command, client_t *client, server_t *serv)
-{
-}
-
 void handle_pasv_command(char *command, client_t *client, server_t *serv)
 {
 }
 
 void handle_port_command(char *command, client_t *client, server_t *serv)
 {
-}
-
-void handle_help_command(char *command, client_t *client, server_t *serv)
-{
-    char *cmd;
-    const char *help_message;
-
-    if (!strcmp(command, "HELP\r\n"))
-        return dputs(HELP_MESSAGE, client->fd);
-    if (command[4] != ' ')
-        return dputs(RESPONSE_UNKNOW_CMD, client->fd);
-    cmd = strdup(command + 5);
-    cmd[strlen(cmd) - 2] = '\0';
-    put_upper_case(cmd);
-    if (!(help_message = hash_table_find(serv->cmd_help_map, cmd))) {
-        printf("not found '%s'\n", cmd);
-        return free(cmd), dputs(RESPONSE_UNKNOW_CMD, client->fd);
-    }
-    dputs(help_message, client->fd);
-    free(cmd);
-}
-
-void handle_noop_command(char *command, client_t *client, server_t *serv)
-{
-    if (strcmp(command, "NOOP\r\n"))
-        return dputs(RESPONSE_UNKNOW_CMD, client->fd);
-    dputs(RESPONSE_OK, client->fd);
 }
 
 void handle_retr_command(char *command, client_t *client, server_t *serv)

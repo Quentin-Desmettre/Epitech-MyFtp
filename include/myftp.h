@@ -96,7 +96,7 @@ typedef struct {
 
 typedef struct {
     int port;
-    char const * const anon_home_dir;
+    char anon_home_dir[PATH_MAX];
     bool is_help;
     bool is_error;
 } args_t;
@@ -138,3 +138,7 @@ void handle_cdup_command(UNUSED char *command,
 client_t *client, server_t *serv);
 void handle_quit_command(char *command, client_t *client, server_t *serv);
 void handle_dele_command(char *command, client_t *client, server_t *serv);
+void handle_help_command(char *command, client_t *client, server_t *serv);
+void handle_noop_command(char *command,
+client_t *client, UNUSED server_t *serv);
+void handle_pwd_command(char *command, client_t *client, server_t *serv);
