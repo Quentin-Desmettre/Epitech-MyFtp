@@ -34,7 +34,7 @@ void put_upper_case(char *str)
     }
 }
 
-void dputs(char *str, int fd)
+void dputs(char const *str, int fd)
 {
     write(fd, str, strlen(str));
 }

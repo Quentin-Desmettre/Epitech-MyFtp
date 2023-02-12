@@ -36,3 +36,4 @@ void hashtable_clear(hash_table_t *map);
 void *hash_table_erase(hash_table_t *map, void *key);
 unsigned hash_function(void *key, unsigned max);
 hash_table_t *init_command_map(void);
+hash_table_t *init_command_help_map(void);

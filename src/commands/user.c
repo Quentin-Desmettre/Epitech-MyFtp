@@ -35,7 +35,7 @@ void handle_user_command(char *command, client_t *client, server_t *serv)
     char *username = strdup(command + 5);
     struct passwd *user;
 
-    if (strlen(username) <= 2) {
+    if (strlen(username) <= 2 || command[4] != ' ') {
         dputs(RESPONSE_STX_ERROR, client->fd);
         return free(username);
     }

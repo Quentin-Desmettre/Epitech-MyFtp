@@ -56,6 +56,7 @@ server_t *server_init(args_t const *args)
     server->nb_client = 0;
     server->clients = hash_table_create(MAX_CLIENTS, int_cmp, int_hash);
     server->cmd_map = init_command_map();
+    server->cmd_help_map = init_command_help_map();
     server->server_fd = socket(AF_INET, SOCK_STREAM, 0);
     server->run = true;
     server->anon_dir = args->anon_home_dir;

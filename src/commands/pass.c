@@ -35,7 +35,8 @@ client_t *client, UNUSED server_t *serv)
 {
     char *password = strdup(command + 5);
     const char *last_command = client->last_command;
-    if (strlen(password) <= 2 && strcmp(client->uname, ANON_USER_LOGIN)) {
+    if ((strlen(password) <= 2 && strcmp(client->uname, ANON_USER_LOGIN))
+    || command[4] != ' ') {
         dputs(RESPONSE_STX_ERROR, client->fd);
         return free(password);
     } else if (strlen(password) <= 2) {

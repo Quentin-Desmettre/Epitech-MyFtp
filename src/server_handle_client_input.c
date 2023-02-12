@@ -65,6 +65,10 @@ void server_handle_command(server_t *server, client_t *client)
         return;
     }
     put_upper_case(command);
+    for (int i = 0; command[i]; i++) {
+        client->i_buf[i] = (client->i_buf[i] >= 'a' && client->i_buf[i] <= 'z')
+        ? client->i_buf[i] - 32 : client->i_buf[i];
+    }
     handler = hash_table_find(server->cmd_map, command);
     handler(client->i_buf, client, server);
     free(command);

@@ -50,6 +50,7 @@
 #define RESPONSE_FILE_ACT_DONE "250 Requested file action okay, completed.\r\n"
 
 #define RESPONSE_CLOSING "221 Service closing control connection.\r\n"
+#define RESPONSE_OK "200 Command okay.\r\n"
 
 UNUSED static const char *USAGE =
     "USAGE: ./myftp port path\n\tport  is the port number on which the server "
@@ -89,6 +90,7 @@ typedef struct {
     int *client_fds;
     hash_table_t *clients;
     hash_table_t *cmd_map;
+    hash_table_t *cmd_help_map;
     char const *anon_dir;
 } server_t;
 
@@ -124,7 +126,7 @@ void remove_fd_from_array(int **array, int *len, int fd);
 bool str_ends_with(char *str, int str_len, char *end);
 void append_str(char **str,
 size_t *str_len, char *to_append, int to_append_len);
-void dputs(char *str, int fd);
+void dputs(char const *str, int fd);
 void put_upper_case(char *str);
 
 // Handlers
