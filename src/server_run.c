@@ -14,6 +14,7 @@ client_t *create_client(struct sockaddr_in *client_data, int client_fd)
     memset(client, 0, sizeof(client_t));
     client->client_addr = *client_data;
     client->fd = client_fd;
+    client->data_fd = -1;
     return client;
 }
 
@@ -46,19 +47,25 @@ void server_disconnect_client(server_t *server, int client_pid)
     remove_fd_from_array(&server->client_fds, &server->nb_client, client_pid);
 }
 
+int my_select(int max_fd,
+fd_set *read_set, fd_set *write_set, fd_set *except_set)
+{
+    struct timeval timeout = TIMEOUT;
+
+    return select(max_fd, read_set, write_set, except_set, &timeout);
+}
+
 void server_run(server_t *server)
 {
     fd_data_t fd_data = {0, NULL, NULL, NULL};
     int select_rval;
-    struct timeval select_timeout;
     int first_fd;
 
     while (server->run) {
-        select_timeout = TIMEOUT;
         fd_data_destroy(&fd_data);
         fd_data = fd_data_init(server);
-        select_rval = select(fd_data.max_pid + 1, fd_data.read_set,
-            NULL, NULL, &select_timeout);
+        select_rval = my_select(fd_data.max_pid + 1, fd_data.read_set,
+            NULL, NULL);
         if (select_rval <= 0)
             continue;
         first_fd = get_first_input_available(&fd_data, server);

@@ -24,6 +24,8 @@
 #include <pwd.h>
 #include <sys/ioctl.h>
 #include <linux/limits.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include "hash_table.h"
 
 // Utils
@@ -34,23 +36,28 @@
 
 // Constants
 #define ANON_USER_LOGIN "Anonymous"
-#define MAX_CLIENTS ((size_t)(1048576))
+#define MAX_CLIENTS ((size_t)(1024))
 #define MAX_INPUT_SIZE ((size_t)(1610612736)) // 1.5 Go
 #define RESPONSE_CONNECTED "220 FTP connection ready.\r\n"
 #define RESPONSE_UNKNOW_CMD "500 Syntax error, command unrecognized.\r\n"
-
 #define RESPONSE_STX_ERROR "501 Syntax error in parameters or arguments.\r\n"
 #define RESPONSE_LOGGED_IN "230 User logged in, proceed.\r\n"
 #define RESPONSE_NOT_LOGGED_IN "530 Not logged in.\r\n"
 #define RESPONSE_USER_FOUND "331 User name okay, need password.\r\n"
-
 #define RESPONSE_INVALID_SEQUENCE "503 Bad sequence of commands.\r\n"
-
 #define RESPONSE_NOTHING_DONE "550 Requested action not taken.\r\n"
 #define RESPONSE_FILE_ACT_DONE "250 Requested file action okay, completed.\r\n"
-
 #define RESPONSE_CLOSING "221 Service closing control connection.\r\n"
 #define RESPONSE_OK "200 Command okay.\r\n"
+
+UNUSED static const char *RESPONSE_FILE_TRANSFER_ENDED =
+"226 Closing data connection. Requested file action successful.\r\n";
+UNUSED static const char *RESPONSE_FILE_TRANSFER_STARTED =
+"150 File status okay; about to open data connection.\r\n";
+UNUSED static const char *RESPONSE_FILE_LOCAL_ERROR =
+"451 Requested action aborted: local error in processing.\r\n";
+UNUSED static const char *RESPONSE_FILE_TRANSFER_ABORTED =
+"426 Connection closed; transfer aborted.\r\n";
 
 UNUSED static const char *USAGE =
     "USAGE: ./myftp port path\n\tport  is the port number on which the server "
@@ -69,6 +76,9 @@ typedef struct {
 
 typedef struct {
     int fd;
+    int data_fd;
+    bool is_passive;
+    bool is_active;
 
     char *i_buf;
     size_t i_buf_size;
@@ -121,6 +131,8 @@ fd_data_t fd_data_init(server_t *server);
 void fd_data_destroy(fd_data_t *fd_data);
 bool is_in_fd_array(int *fd_array, int len, int fd);
 void remove_fd_from_array(int **array, int *len, int fd);
+int my_select(int max_fd,
+fd_set *read_set, fd_set *write_set, fd_set *except_set);
 
 // Strings
 bool str_ends_with(char *str, int str_len, char *end);
@@ -142,3 +154,9 @@ void handle_help_command(char *command, client_t *client, server_t *serv);
 void handle_noop_command(char *command,
 client_t *client, UNUSED server_t *serv);
 void handle_pwd_command(char *command, client_t *client, server_t *serv);
+void handle_passive(char const *file_path, client_t *client);
+void handle_port_command(char *command, client_t *client, server_t *serv);
+void handle_pasv_command(char *command,
+client_t *client, UNUSED server_t *serv);
+void handle_retr_command(char *command,
+client_t *client, UNUSED server_t *serv);

@@ -8,24 +8,14 @@
 #include "myftp.h"
 #include "help_messages.h"
 
-void handle_pasv_command(char *command, client_t *client, server_t *serv)
-{
-}
-
-void handle_port_command(char *command, client_t *client, server_t *serv)
-{
-}
-
-void handle_retr_command(char *command, client_t *client, server_t *serv)
-{
-}
-
 void handle_stor_command(char *command, client_t *client, server_t *serv)
 {
+    printf("Received '%s'\n", command);
 }
 
 void handle_list_command(char *command, client_t *client, server_t *serv)
 {
+    printf("Received '%s'\n", command);
 }
 
 hash_table_t *init_command_map(void)
