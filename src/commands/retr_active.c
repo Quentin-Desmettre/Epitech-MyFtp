@@ -7,7 +7,7 @@
 
 #include "myftp.h"
 
-void handle_active(char const *file_path, client_t *client)
+void handle_active_retr(char const *file_path, client_t *client)
 {
 }
 
@@ -22,8 +22,11 @@ client_t *client, UNUSED server_t *serv)
         return dputs(RESPONSE_STX_ERROR, client->fd);
     file_path[strlen(file_path) - 2] = 0;
     if (client->is_passive)
-        return handle_passive(file_path, client);
+        handle_passive_retr(file_path, client);
     else if (client->is_active)
-        return handle_active(file_path, client);
-    return dputs(RESPONSE_NOTHING_DONE, client->fd);
+        handle_active_retr(file_path, client);
+    else
+        dputs(RESPONSE_NOTHING_DONE, client->fd);
+    client->is_active = false;
+    client->is_passive = false;
 }

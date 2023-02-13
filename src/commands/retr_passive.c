@@ -7,7 +7,7 @@
 
 #include "myftp.h"
 
-bool send_file_content(char *content, size_t size, int data_fd)
+static bool send_file_content(char *content, size_t size, int data_fd)
 {
     size_t bytes_sent = 0;
     int result;
@@ -21,7 +21,7 @@ bool send_file_content(char *content, size_t size, int data_fd)
     return true;
 }
 
-void close_client_with_message(char const *message,
+static void close_client_with_message(char const *message,
 client_t *client, int write_fd)
 {
     dputs(message, client->fd);
@@ -30,7 +30,7 @@ client_t *client, int write_fd)
     exit(0);
 }
 
-fd_set init_fd_set(int fd)
+static fd_set init_fd_set(int fd)
 {
     fd_set readfds;
 
@@ -39,7 +39,7 @@ fd_set init_fd_set(int fd)
     return readfds;
 }
 
-void send_data_to_client(client_t *client, char const *file_path)
+static void send_data_to_client(client_t *client, char const *file_path)
 {
     struct sockaddr_in data_addr;
     UNUSED socklen_t addrlen = sizeof(data_addr);
@@ -51,7 +51,7 @@ void send_data_to_client(client_t *client, char const *file_path)
 
     if (chdir(client->cwd) < 0)
         close_client_with_message(RESPONSE_FILE_LOCAL_ERROR, client, write_fd);
-    if ((fd = open(file_path, O_RDONLY)) < 0)
+    if ((fd = open(file_path, O_RDONLY)) < 0 || write_fd < 0)
         close_client_with_message(RESPONSE_NOTHING_DONE, client, write_fd);
     while ((nb_read = read(fd, buf, 4096)) > 0)
         if (!send_file_content(buf, nb_read, write_fd))
@@ -62,11 +62,9 @@ void send_data_to_client(client_t *client, char const *file_path)
     close_client_with_message(RESPONSE_FILE_TRANSFER_ENDED, client, write_fd);
 }
 
-void handle_passive(char const *file_path, client_t *client)
+void handle_passive_retr(char const *file_path, client_t *client)
 {
     fd_set readfds = init_fd_set(client->data_fd);
-    struct sockaddr_in data_addr;
-    socklen_t addrlen = sizeof(data_addr);
     int selected;
     int pid;
 
@@ -80,4 +78,6 @@ void handle_passive(char const *file_path, client_t *client)
     if (pid == 0)
         return send_data_to_client(client, file_path);
     close(client->data_fd);
+    client->data_fd = -1;
+    client->is_passive = false;
 }

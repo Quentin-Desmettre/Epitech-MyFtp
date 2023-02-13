@@ -22,6 +22,15 @@ void send_port_data(struct sockaddr_in *data_addr, client_t *client)
     address_parts[2], address_parts[3], port_parts[0], port_parts[1]);
 }
 
+void disable_passive_mode(client_t *client)
+{
+    if (client->is_passive || client->is_active) {
+        close(client->data_fd);
+        client->is_passive = false;
+        client->is_active = false;
+    }
+}
+
 void handle_pasv_command(char *command,
 client_t *client, UNUSED server_t *serv)
 {
@@ -29,12 +38,12 @@ client_t *client, UNUSED server_t *serv)
     struct sockaddr_in data_addr;
     socklen_t addrlen = sizeof(data_addr);
 
-
     if (strcmp(command, "PASV\r\n"))
         return (void)close(data_socket), dputs(RESPONSE_STX_ERROR, client->fd);
     if (!client->is_logged_in)
         return (void)close(data_socket),
         dputs(RESPONSE_NOT_LOGGED_IN, client->fd);
+    disable_passive_mode(client);
     memcpy(&data_addr, &client->client_addr, addrlen);
     data_addr.sin_port = 0;
     if (data_socket < 0 || bind(data_socket,

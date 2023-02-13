@@ -154,7 +154,7 @@ void handle_help_command(char *command, client_t *client, server_t *serv);
 void handle_noop_command(char *command,
 client_t *client, UNUSED server_t *serv);
 void handle_pwd_command(char *command, client_t *client, server_t *serv);
-void handle_passive(char const *file_path, client_t *client);
+void handle_passive_retr(char const *file_path, client_t *client);
 void handle_port_command(char *command, client_t *client, server_t *serv);
 void handle_pasv_command(char *command,
 client_t *client, UNUSED server_t *serv);
