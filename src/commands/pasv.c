@@ -22,7 +22,7 @@ void send_port_data(struct sockaddr_in *data_addr, client_t *client)
     address_parts[2], address_parts[3], port_parts[0], port_parts[1]);
 }
 
-void disable_passive_mode(client_t *client)
+void disable_current_mode(client_t *client)
 {
     if (client->is_passive || client->is_active) {
         close(client->data_fd);
@@ -43,7 +43,7 @@ client_t *client, UNUSED server_t *serv)
     if (!client->is_logged_in)
         return (void)close(data_socket),
         dputs(RESPONSE_NOT_LOGGED_IN, client->fd);
-    disable_passive_mode(client);
+    disable_current_mode(client);
     memcpy(&data_addr, &client->client_addr, addrlen);
     data_addr.sin_port = 0;
     if (data_socket < 0 || bind(data_socket,

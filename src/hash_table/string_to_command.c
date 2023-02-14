@@ -8,34 +8,6 @@
 #include "myftp.h"
 #include "help_messages.h"
 
-static bool send_file_content(char *content, size_t size, int data_fd)
-{
-    size_t bytes_sent = 0;
-    int result;
-
-    while (bytes_sent < size) {
-        result = write(data_fd, content + bytes_sent, size - bytes_sent);
-        if (result < 0)
-            return false;
-        bytes_sent += result;
-    }
-    return true;
-}
-
-void send_fd_data_to_client(client_t *client, int fd, int write_fd)
-{
-    char buf[4096];
-    int nb_read;
-
-    while ((nb_read = read(fd, buf, 4096)) > 0)
-        if (!send_file_content(buf, nb_read, write_fd))
-            close_client(RESPONSE_FILE_TRANSFER_ABORTED,
-            client, write_fd, fd);
-    if (nb_read < 0)
-        close_client(RESPONSE_FILE_LOCAL_ERROR, client, write_fd, fd);
-    close_client(RESPONSE_FILE_TRANSFER_ENDED, client, write_fd, fd);
-}
-
 hash_table_t *init_command_map(void)
 {
     hash_table_t *map = hash_table_create(10, str_cmp, str_hash);

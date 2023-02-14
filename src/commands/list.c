@@ -22,8 +22,8 @@ void send_list_to_client(client_t *client, char const *file)
     struct sockaddr_in data_addr;
     UNUSED socklen_t addrlen = sizeof(data_addr);
     int fd;
-    int write_fd = accept(client->data_fd,
-    (struct sockaddr *)&data_addr, &addrlen);
+    int write_fd = (client->is_passive ? accept(client->data_fd,
+    (struct sockaddr *)&data_addr, &addrlen) : client->data_fd);
     FILE *file_buf;
     char cmd_buf[PATH_MAX + 10];
 
@@ -39,10 +39,6 @@ void send_list_to_client(client_t *client, char const *file)
     send_fd_data_to_client(client, fd, write_fd);
 }
 
-void handle_active_list(char const *path, client_t *client)
-{
-}
-
 void handle_list_command(char *command,
 client_t *client, UNUSED server_t *serv)
 {
@@ -56,12 +52,8 @@ client_t *client, UNUSED server_t *serv)
         path = ".";
     else
         path[strlen(path) - 2] = 0;
-    if (client->is_passive)
-        handle_passive(path, client, send_list_to_client);
-    else if (client->is_active)
-        handle_active_list(path, client);
+    if (client->is_passive || client->is_active)
+        handle_data_connection(path, client, send_list_to_client);
     else
         dputs(RESPONSE_NOTHING_DONE, client->fd);
-    client->is_active = false;
-    client->is_passive = false;
 }

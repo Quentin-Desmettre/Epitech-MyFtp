@@ -160,7 +160,7 @@ void handle_pasv_command(char *command,
 client_t *client, UNUSED server_t *serv);
 void handle_retr_command(char *command,
 client_t *client, UNUSED server_t *serv);
-void handle_passive(char const *data, client_t *client,
+void handle_data_connection(char const *data, client_t *client,
 void (*data_sender)(client_t *, char const *));
 void send_file_to_client(client_t *client, char const *file_path);
 void close_client_with_message(char const *message,
@@ -172,3 +172,4 @@ void close_client(char const *message, client_t *client, int write_fd, int fd);
 fd_set init_fd_set(int fd);
 void handle_stor_command(char *command, client_t *client, server_t *serv);
 char *get_available_input(int client_socket, int *available_bytes);
+void disable_current_mode(client_t *client);

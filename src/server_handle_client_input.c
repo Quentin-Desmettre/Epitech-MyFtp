@@ -70,6 +70,7 @@ void server_handle_command(server_t *server, client_t *client)
         ? client->i_buf[i] - 32 : client->i_buf[i];
     }
     handler = hash_table_find(server->cmd_map, command);
+    printf("Got '%s' as input\n", client->i_buf);
     handler(client->i_buf, client, server);
     free(command);
 }

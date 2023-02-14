@@ -7,17 +7,13 @@
 
 #include "myftp.h"
 
-void handle_active_stor(char const *file_path, client_t *client)
-{
-}
-
 void get_file_from_client(client_t *client, char const *file_path)
 {
     struct sockaddr_in data_addr;
     UNUSED socklen_t addrlen = sizeof(data_addr);
     int fd = -1;
-    int read_fd = accept(client->data_fd,
-    (struct sockaddr *)&data_addr, &addrlen);
+    int read_fd = (client->is_passive ? accept(client->data_fd,
+    (struct sockaddr *)&data_addr, &addrlen) : client->data_fd);
     char buf[4096];
     int nb_read;
 
@@ -35,7 +31,8 @@ void get_file_from_client(client_t *client, char const *file_path)
     close_client(RESPONSE_FILE_TRANSFER_ENDED, client, read_fd, fd);
 }
 
-void handle_stor_command(char *command, client_t *client, server_t *serv)
+void handle_stor_command(char *command,
+client_t *client, UNUSED server_t *serv)
 {
     char *file_path = command + 5;
 
@@ -44,12 +41,8 @@ void handle_stor_command(char *command, client_t *client, server_t *serv)
     if (strlen(file_path) < 2 || command[4] != ' ')
         return dputs(RESPONSE_STX_ERROR, client->fd);
     file_path[strlen(file_path) - 2] = 0;
-    if (client->is_passive)
-        handle_passive(file_path, client, get_file_from_client);
-    else if (client->is_active)
-        handle_active_stor(file_path, client);
+    if (client->is_passive || client->is_active)
+        handle_data_connection(file_path, client, get_file_from_client);
     else
         dputs(RESPONSE_NOTHING_DONE, client->fd);
-    client->is_active = false;
-    client->is_passive = false;
 }
