@@ -160,3 +160,12 @@ void handle_pasv_command(char *command,
 client_t *client, UNUSED server_t *serv);
 void handle_retr_command(char *command,
 client_t *client, UNUSED server_t *serv);
+void handle_passive(char const *data, client_t *client,
+void (*data_sender)(client_t *, char const *));
+void send_file_to_client(client_t *client, char const *file_path);
+void close_client_with_message(char const *message,
+client_t *client, int write_fd);
+void send_fd_data_to_client(client_t *client, int fd, int write_fd);
+void handle_list_command(char *command,
+client_t *client, UNUSED server_t *serv);
+void close_client(char const *message, client_t *client, int write_fd, int fd);
