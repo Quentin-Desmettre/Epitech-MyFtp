@@ -169,3 +169,6 @@ void send_fd_data_to_client(client_t *client, int fd, int write_fd);
 void handle_list_command(char *command,
 client_t *client, UNUSED server_t *serv);
 void close_client(char const *message, client_t *client, int write_fd, int fd);
+fd_set init_fd_set(int fd);
+void handle_stor_command(char *command, client_t *client, server_t *serv);
+char *get_available_input(int client_socket, int *available_bytes);

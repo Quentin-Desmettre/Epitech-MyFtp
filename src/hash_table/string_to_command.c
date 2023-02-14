@@ -36,11 +36,6 @@ void send_fd_data_to_client(client_t *client, int fd, int write_fd)
     close_client(RESPONSE_FILE_TRANSFER_ENDED, client, write_fd, fd);
 }
 
-void handle_stor_command(char *command, client_t *client, server_t *serv)
-{
-    printf("Received '%s'\n", command);
-}
-
 hash_table_t *init_command_map(void)
 {
     hash_table_t *map = hash_table_create(10, str_cmp, str_hash);

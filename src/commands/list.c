@@ -62,4 +62,6 @@ client_t *client, UNUSED server_t *serv)
         handle_active_list(path, client);
     else
         dputs(RESPONSE_NOTHING_DONE, client->fd);
+    client->is_active = false;
+    client->is_passive = false;
 }
