@@ -173,3 +173,8 @@ fd_set init_fd_set(int fd);
 void handle_stor_command(char *command, client_t *client, server_t *serv);
 char *get_available_input(int client_socket, int *available_bytes);
 void disable_current_mode(client_t *client);
+void handle_mkd_command(char *command,
+client_t *client, UNUSED server_t *serv);
+void handle_rmd_command(char *command,
+client_t *client, UNUSED server_t *serv);
+int remove_directory(const char *path);

@@ -26,6 +26,8 @@ hash_table_t *init_command_map(void)
     hash_table_insert(map, "RETR", handle_retr_command);
     hash_table_insert(map, "STOR", handle_stor_command);
     hash_table_insert(map, "LIST", handle_list_command);
+    hash_table_insert(map, "MKD", handle_mkd_command);
+    hash_table_insert(map, "RMD", handle_rmd_command);
     return map;
 }
 
