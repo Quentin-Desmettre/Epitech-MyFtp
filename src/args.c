@@ -49,7 +49,8 @@ args_t get_args(int ac, char **av)
     } else {
         args.port = strtol(av[1], &endPtr, 10);
         check_path_validity(&args);
-        args.is_error = !(av[1][0] != '\0' && endPtr && *endPtr == '\0');
+        args.is_error = args.is_error ||
+        !(av[1][0] != '\0' && endPtr && *endPtr == '\0');
     }
     return args;
 }
