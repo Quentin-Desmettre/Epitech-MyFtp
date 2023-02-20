@@ -78,21 +78,21 @@ void server_handle_command(server_t *server, client_t *client)
 void server_handle_client_input(server_t *server, int client_pid)
 {
     client_t *client = hash_table_find(server->clients, HASHCAST(client_pid));
-    int available_bytes;
+    int rd_bytes;
     char *readable_input = (client ?
-    get_available_input(client_pid, &available_bytes) : 0);
+    get_available_input(client_pid, &rd_bytes) : 0);
 
-    if (!client || available_bytes < 0)
+    if (!client || rd_bytes < 0)
         return;
-    if (available_bytes == 0 ||
-    client->i_buf_size + ABS(available_bytes) > MAX_INPUT_SIZE)
+    if (rd_bytes == 0 ||
+    client->i_buf_size + ABS(rd_bytes) > MAX_INPUT_SIZE)
         return server_disconnect_client(server, client_pid);
-    append_str(&client->i_buf, &client->i_buf_size,
-    readable_input, available_bytes);
+    append_str(&client->i_buf, &client->i_buf_size, readable_input, rd_bytes);
     free(readable_input);
     if (str_ends_with(client->i_buf, client->i_buf_size, "\r\n"))
         server_handle_command(server, client);
-    if (hash_table_find(server->clients, HASHCAST(client_pid)) == client) {
+    if (hash_table_find(server->clients, HASHCAST(client_pid)) == client &&
+    str_ends_with(client->i_buf, client->i_buf_size, "\r\n")) {
         free(client->i_buf);
         client->i_buf = NULL;
         client->i_buf_size = 0;
