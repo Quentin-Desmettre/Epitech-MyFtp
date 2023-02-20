@@ -6,6 +6,46 @@
 */
 
 #include "myftp.h"
+#include <stdio.h>
+#include <sys/types.h>
+
+void invert_buffer_clean(char **buf, long *buf_size)
+{
+    for (int i = 0; i < (*buf_size); i++) {
+        if ((*buf)[i] == '\n') {
+            (*buf_size)++;
+            (*buf) = realloc((*buf), (*buf_size) + 1);
+            memmove((*buf) + i + 1, (*buf) + i, (*buf_size) - i);
+            (*buf)[i] = '\r';
+            i++;
+        }
+    }
+}
+
+void clean_buffer(int fd, char *buf, char *last_char, long *nb_read)
+{
+    printf("Cleaned buffer\n");
+    if (*last_char == '\r' && buf[0] != '\n')
+        write(fd, "\r", 1);
+    for (int i = 0; i < (*nb_read); i++) {
+        if (buf[i] == '\r' && i + 1 < (*nb_read) && buf[i + 1] == '\n') {
+            memmove(buf + i, buf + i + 1, (*nb_read) - i - 1);
+            i--;
+            (*nb_read)--;
+        }
+    }
+    if (buf[(*nb_read) - 1] == '\r') {
+        *last_char = '\r';
+        (*nb_read)--;
+    } else
+        *last_char = 0;
+}
+
+void write_buffer(int fd, char *buf, char *last_char, long nb_read)
+{
+    clean_buffer(fd, buf, last_char, &nb_read);
+    write(fd, buf, nb_read);
+}
 
 void get_file_from_client(client_t *client, char const *file_path)
 {
@@ -14,20 +54,20 @@ void get_file_from_client(client_t *client, char const *file_path)
     int fd = -1;
     int read_fd = (client->is_passive ? accept(client->data_fd,
     (struct sockaddr *)&data_addr, &addrlen) : client->data_fd);
-    char buf[4096];
-    int nb_read;
-
+    char buf[BUFFER_SIZE];
+    long nb_read;
+    char last_char = 0;
     if (chdir(client->cwd) < 0)
         close_client(RESPONSE_FILE_LOCAL_ERROR, client, read_fd, fd);
-    if ((fd = open(file_path, O_WRONLY | O_CREAT | O_TRUNC, 0644)) < 0
-    || read_fd < 0)
+    if ((fd = open(file_path, 01101, 0644)) < 0 || read_fd < 0)
         close_client(RESPONSE_NOTHING_DONE, client, read_fd, fd);
-    while ((nb_read = read(read_fd, buf, 4096)) > 0)
-        write(fd, buf, nb_read);
-    if (nb_read < 0) {
-        remove(file_path);
+    while ((nb_read = read(read_fd, buf, BUFFER_SIZE)) > 0)
+        write_buffer(fd, buf, &last_char, nb_read);
+    if (last_char == '\r')
+        write(fd, "\r", 1);
+    if (nb_read < 0)
+        return remove(file_path),
         close_client(RESPONSE_FILE_TRANSFER_ABORTED, client, read_fd, fd);
-    }
     close_client(RESPONSE_FILE_TRANSFER_ENDED, client, read_fd, fd);
 }
 

@@ -37,6 +37,7 @@
 // Constants
 #define ANON_USER_LOGIN "Anonymous"
 #define MAX_CLIENTS ((size_t)(1024))
+#define BUFFER_SIZE 8192
 #define MAX_INPUT_SIZE ((size_t)(1610612736)) // 1.5 Go
 #define RESPONSE_CONNECTED "220 FTP connection ready.\r\n"
 #define RESPONSE_UNKNOW_CMD "500 Syntax error, command unrecognized.\r\n"
@@ -178,3 +179,6 @@ client_t *client, UNUSED server_t *serv);
 void handle_rmd_command(char *command,
 client_t *client, UNUSED server_t *serv);
 int remove_directory(const char *path);
+void clean_buffer(int fd, char *buf, char *last_char, long *nb_read);
+void invert_buffer_clean(char **buf, long *buf_size);
+void *memdup(void *base, size_t size);

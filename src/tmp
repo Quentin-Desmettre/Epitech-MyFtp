@@ -1,0 +1,24 @@
+
+REQUIRE for all tests:
+- connection to server (server answer with 220)
+
+Authentication test:
+- USER, PASS
+- USER, HELP, PASS => Should not work
+- USER, yuksef, PASS => should not work
+- USER, llhbfsk, USER, PASS => Should work
+- USER, sqykf, USER, PASS, USER, PASS => Should work
+- USER inconnu
+- USER, PASS invalide, PASS valide => should not work
+- USER, USER inconnu, PASS => Should not work
+- USER, USER, PASS => Should work
+- USER vide
+- USER\r\n
+
+CWD, CDUP PWD
+- CWD with no arguments / only 1 space
+- CDUP with arguments / 1 space
+- PWD with arguments / 1 space
+- PWD, CDUP, CWD .., 
+
+

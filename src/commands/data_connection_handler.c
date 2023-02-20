@@ -25,29 +25,37 @@ fd_set init_fd_set(int fd)
     return readfds;
 }
 
-static bool send_file_content(char *content, size_t size, int data_fd)
+static bool send_file_content(char *content, long size, int data_fd)
 {
-    size_t bytes_sent = 0;
-    int result;
+    long bytes_sent = 0;
+    long result;
 
+    content = memdup(content, size);
+    invert_buffer_clean(&content, &size);
     while (bytes_sent < size) {
         result = write(data_fd, content + bytes_sent, size - bytes_sent);
-        if (result < 0)
+        if (result < 0) {
+            free(content);
             return false;
+        }
         bytes_sent += result;
     }
+    free(content);
     return true;
 }
 
 void send_fd_data_to_client(client_t *client, int fd, int write_fd)
 {
-    char buf[4096];
-    int nb_read;
+    char buf[BUFFER_SIZE];
+    long nb_read;
+    char last_char = 0;
 
-    while ((nb_read = read(fd, buf, 4096)) > 0)
+    while ((nb_read = read(fd, buf, BUFFER_SIZE)) > 0)
         if (!send_file_content(buf, nb_read, write_fd))
             close_client(RESPONSE_FILE_TRANSFER_ABORTED,
             client, write_fd, fd);
+    if (last_char == '\r')
+        write(write_fd, "\r", 1);
     if (nb_read < 0)
         close_client(RESPONSE_FILE_LOCAL_ERROR, client, write_fd, fd);
     close_client(RESPONSE_FILE_TRANSFER_ENDED, client, write_fd, fd);
@@ -56,7 +64,6 @@ void send_fd_data_to_client(client_t *client, int fd, int write_fd)
 void handle_data_connection(char const *data, client_t *client,
 void (*data_sender)(client_t *, char const *))
 {
-    printf("handle_data_connection\n");
     fd_set readfds = init_fd_set(client->data_fd);
     int selected;
     int pid;

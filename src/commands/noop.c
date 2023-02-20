@@ -7,6 +7,16 @@
 
 #include "myftp.h"
 
+void *memdup(void *base, size_t size)
+{
+    void *new = malloc(size);
+
+    if (!new)
+        return NULL;
+    memcpy(new, base, size);
+    return new;
+}
+
 void handle_noop_command(char *command,
 client_t *client, UNUSED server_t *serv)
 {
