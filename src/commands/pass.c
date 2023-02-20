@@ -37,18 +37,13 @@ client_t *client, UNUSED server_t *serv)
 {
     char *password = strdup(command + 5);
     const char *last_command = client->last_command;
-    if ((strlen(password) <= 2 && strcmp(client->uname, ANON_USER_LOGIN))
-    || command[4] != ' ') {
-        dputs(RESPONSE_STX_ERROR, client->fd);
-        return free(password);
-    } else if (strlen(password) <= 2) {
-        dputs(RESPONSE_LOGGED_IN, client->fd);
-        client->is_logged_in = true;
-        return free(password);
-    }
-    password[strlen(password) - 2] = '\0';
-    client->last_command = "PASS";
     if (!last_command || strcmp(last_command, "USER"))
         return free(password), dputs(RESPONSE_INVALID_SEQUENCE, client->fd);
-    check_password(password, client);
+    if (client->uname && !strcmp(client->uname, ANON_USER_LOGIN)
+    && !strcmp(command, "PASS \r\n")) {
+        client->is_logged_in = true;
+        return free(password), dputs(RESPONSE_LOGGED_IN, client->fd);
+    }
+    dputs(RESPONSE_NOT_LOGGED_IN, client->fd);
+    free(password);
 }

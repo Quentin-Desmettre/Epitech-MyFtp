@@ -57,7 +57,7 @@ client_t *client, UNUSED server_t *serv)
     if (strlen(client->cwd) + strlen(dir) + 2 > PATH_MAX)
         return dputs(RESPONSE_NOTHING_DONE, client->fd);
     dir[strlen(dir) - 2] = '\0';
-    if (mkdir(dir, 0644) == -1)
+    if (mkdir(dir, 0777) == -1)
         dputs(RESPONSE_NOTHING_DONE, client->fd);
     else
         dprintf(client->fd, "257 \"%s\" created.\r\n", dir);

@@ -12,6 +12,7 @@ void unlog_client(client_t *client)
     client->is_logged_in = false;
     free(client->uname);
     client->uname = NULL;
+    client->user_data = NULL;
 }
 
 void log_anon_user(client_t *client, char const *anon_dir)
@@ -48,7 +49,6 @@ void handle_user_command(char *command, client_t *client, server_t *serv)
     }
     if ((user = getpwnam(username)))
         return log_regular_user(client, user, username);
-    dputs(RESPONSE_NOT_LOGGED_IN, client->fd);
-    client->last_command = NULL;
+    dputs(RESPONSE_USER_FOUND, client->fd);
     free(username);
 }
