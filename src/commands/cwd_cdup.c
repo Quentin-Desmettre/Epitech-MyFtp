@@ -34,7 +34,7 @@ void handle_cwd_command(char *command, client_t *client, UNUSED server_t *serv)
     if (!client->is_logged_in)
         return free(cmd), dputs(RESPONSE_NOT_LOGGED_IN, client->fd);
     if (strlen(cmd) <= 2 || command[3] != ' ')
-        return free(cmd), dputs(RESPONSE_STX_ERROR, client->fd);
+        return free(cmd), dputs(RESPONSE_NOTHING_DONE, client->fd);
     cmd[strlen(cmd) - 2] = '\0';
     if (change_to_dir(client->cwd, cmd, client->cwd))
         dputs(RESPONSE_FILE_ACT_DONE, client->fd);
