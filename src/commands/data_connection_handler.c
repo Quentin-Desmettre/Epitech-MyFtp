@@ -48,14 +48,11 @@ void send_fd_data_to_client(client_t *client, int fd, int write_fd)
 {
     char buf[BUFFER_SIZE];
     long nb_read;
-    char last_char = 0;
 
     while ((nb_read = read(fd, buf, BUFFER_SIZE)) > 0)
         if (!send_file_content(buf, nb_read, write_fd))
             close_client(RESPONSE_FILE_TRANSFER_ABORTED,
             client, write_fd, fd);
-    if (last_char == '\r')
-        write(write_fd, "\r", 1);
     if (nb_read < 0)
         close_client(RESPONSE_FILE_LOCAL_ERROR, client, write_fd, fd);
     close_client(RESPONSE_FILE_TRANSFER_ENDED, client, write_fd, fd);

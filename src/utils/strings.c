@@ -34,6 +34,16 @@ void put_upper_case(char *str)
     }
 }
 
+int count_char(char *str, long str_len, char c)
+{
+    int count = 0;
+
+    for (int i = 0; i < str_len; i++)
+        if (str[i] == c)
+            count++;
+    return count;
+}
+
 void dputs(char const *str, int fd)
 {
     write(fd, str, strlen(str));

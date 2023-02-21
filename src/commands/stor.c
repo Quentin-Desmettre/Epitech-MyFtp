@@ -11,20 +11,30 @@
 
 void invert_buffer_clean(char **buf, long *buf_size)
 {
-    for (int i = 0; i < (*buf_size); i++) {
-        if ((*buf)[i] == '\n') {
-            (*buf_size)++;
-            (*buf) = realloc((*buf), (*buf_size) + 1);
-            memmove((*buf) + i + 1, (*buf) + i, (*buf_size) - i);
-            (*buf)[i] = '\r';
-            i++;
+    long new_buf_size = *buf_size + count_char(*buf, *buf_size, '\n');
+    char *new_buf = malloc(new_buf_size);
+    long new_buf_pos = 0;
+    for (long buf_pos = 0; buf_pos < *buf_size; buf_pos++) {
+        if ((*buf)[buf_pos] == '\n') {
+            new_buf[new_buf_pos] = '\r';
+            new_buf_pos++;
         }
+        if (!(*buf)[buf_pos] && buf_pos > 0 && (*buf)[buf_pos - 1] == '\r') {
+            new_buf[new_buf_pos] = 0;
+            new_buf_pos++;
+            new_buf_size++;
+            new_buf = realloc(new_buf, new_buf_size);
+        }
+        new_buf[new_buf_pos] = (*buf)[buf_pos];
+        new_buf_pos++;
     }
+    free(*buf);
+    *buf = new_buf;
+    *buf_size = new_buf_size;
 }
 
 void clean_buffer(int fd, char *buf, char *last_char, long *nb_read)
 {
-    printf("Cleaned buffer\n");
     if (*last_char == '\r' && buf[0] != '\n')
         write(fd, "\r", 1);
     for (int i = 0; i < (*nb_read); i++) {

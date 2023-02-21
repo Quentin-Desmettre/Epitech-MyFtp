@@ -182,3 +182,4 @@ int remove_directory(const char *path);
 void clean_buffer(int fd, char *buf, char *last_char, long *nb_read);
 void invert_buffer_clean(char **buf, long *buf_size);
 void *memdup(void *base, size_t size);
+int count_char(char *str, long str_len, char c);
