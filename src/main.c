@@ -20,6 +20,20 @@ static int bad_config(args_t *args, char **av)
     return 84;
 }
 
+int client_chdir(client_t *cli)
+{
+    char current_dir[PATH_MAX];
+
+    if (chdir(cli->cwd) == -1 || getcwd(current_dir, PATH_MAX) == NULL)
+        return -1;
+    if (strlen(cli->root_dir) > strlen(current_dir) ||
+    strncmp(current_dir, cli->root_dir, strlen(cli->root_dir)) != 0) {
+        chdir(current_dir);
+        return -1;
+    }
+    return 0;
+}
+
 int main(int ac, char **av)
 {
     args_t args = get_args(ac, av);

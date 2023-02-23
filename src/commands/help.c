@@ -16,7 +16,7 @@ void handle_help_command(char *command, client_t *client, server_t *serv)
     if (!strcmp(command, "HELP\r\n"))
         return dputs(HELP_MESSAGE, client->fd);
     if (command[4] != ' ')
-        return dputs(RESPONSE_UNKNOW_CMD, client->fd);
+        return dputs(RESPONSE_NOTHING_DONE, client->fd);
     cmd = strdup(command + 5);
     cmd[strlen(cmd) - 2] = '\0';
     put_upper_case(cmd);

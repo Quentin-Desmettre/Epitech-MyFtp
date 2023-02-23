@@ -60,18 +60,18 @@ void server_handle_command(server_t *server, client_t *client)
 
     clean_input_buffer(client);
     command = extract_command_name(client, server);
-    if (!command) {
-        dputs(RESPONSE_UNKNOW_CMD, client->fd);
-        return;
-    }
+    if (!command)
+        return dputs(RESPONSE_UNKNOW_CMD, client->fd);
     put_upper_case(command);
-    for (int i = 0; command[i]; i++) {
+    for (int i = 0; command[i]; i++)
         client->i_buf[i] = (client->i_buf[i] >= 'a' && client->i_buf[i] <= 'z')
         ? client->i_buf[i] - 32 : client->i_buf[i];
-    }
     handler = hash_table_find(server->cmd_map, command);
     printf("Got '%s' as input\n", client->i_buf);
     handler(client->i_buf, client, server);
+    free(client->i_buf);
+    client->i_buf = NULL;
+    client->i_buf_size = 0;
     free(command);
 }
 

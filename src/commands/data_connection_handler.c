@@ -53,8 +53,11 @@ void send_fd_data_to_client(client_t *client, int fd, int write_fd)
         if (!send_file_content(buf, nb_read, write_fd))
             close_client(RESPONSE_FILE_TRANSFER_ABORTED,
             client, write_fd, fd);
-    if (nb_read < 0)
-        close_client(RESPONSE_FILE_LOCAL_ERROR, client, write_fd, fd);
+    if (nb_read < 0) {
+        dprintf(write_fd, "error while reading\r\n");
+        close_client(RESPONSE_NOTHING_DONE, client, write_fd, fd);
+    }
+    dputs(RESPONSE_FILE_TRANSFER_STARTED, client->fd);
     close_client(RESPONSE_FILE_TRANSFER_ENDED, client, write_fd, fd);
 }
 
@@ -65,14 +68,13 @@ void (*data_sender)(client_t *, char const *))
     int selected;
     int pid;
 
-    dputs(RESPONSE_FILE_TRANSFER_STARTED, client->fd);
     selected = (client->is_passive ?
     my_select(client->data_fd + 1, &readfds, NULL, NULL) : 1);
     if (selected <= 0)
-        return dputs(RESPONSE_FILE_LOCAL_ERROR, client->fd);
+        return dputs(RESPONSE_NOTHING_DONE, client->fd);
     pid = fork();
     if (pid == -1)
-        return dputs(RESPONSE_FILE_LOCAL_ERROR, client->fd);
+        return dputs(RESPONSE_NOTHING_DONE, client->fd);
     if (pid == 0)
         return data_sender(client, data);
     close(client->data_fd);

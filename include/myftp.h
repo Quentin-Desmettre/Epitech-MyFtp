@@ -89,6 +89,7 @@ typedef struct {
     struct sockaddr_in client_addr;
 
     char cwd[PATH_MAX];
+    const char *root_dir;
 
     bool is_logged_in;
     char const *last_command;
@@ -141,6 +142,7 @@ void append_str(char **str,
 size_t *str_len, char *to_append, int to_append_len);
 void dputs(char const *str, int fd);
 void put_upper_case(char *str);
+int client_chdir(client_t *cli);
 
 // Handlers
 void handle_pass_command(char *command, client_t *client, server_t *serv);

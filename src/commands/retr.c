@@ -16,8 +16,8 @@ void send_file_to_client(client_t *client, char const *file_path)
     int write_fd = (client->is_passive ? accept(client->data_fd,
     (struct sockaddr *)&data_addr, &addrlen) : client->data_fd);
 
-    if (chdir(client->cwd) < 0)
-        close_client(RESPONSE_FILE_LOCAL_ERROR, client, write_fd, fd);
+    if (client_chdir(client) < 0)
+        close_client(RESPONSE_NOTHING_DONE, client, write_fd, fd);
     if ((fd = open(file_path, O_RDONLY)) < 0 || write_fd < 0)
         close_client(RESPONSE_NOTHING_DONE, client, write_fd, fd);
     send_fd_data_to_client(client, fd, write_fd);
@@ -31,10 +31,10 @@ client_t *client, UNUSED server_t *serv)
     if (!client->is_logged_in)
         return dputs(RESPONSE_NOT_LOGGED_IN, client->fd);
     if (strlen(file_path) < 2 || command[4] != ' ')
-        return dputs(RESPONSE_STX_ERROR, client->fd);
+        return dputs(RESPONSE_NOTHING_DONE, client->fd);
     file_path[strlen(file_path) - 2] = 0;
     if (client->is_passive || client->is_active)
         handle_data_connection(file_path, client, send_file_to_client);
     else
-        dputs(RESPONSE_NOTHING_DONE, client->fd);
+        dputs("425 Can't open data connection.\r\n", client->fd);
 }

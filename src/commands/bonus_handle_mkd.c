@@ -53,7 +53,7 @@ client_t *client, UNUSED server_t *serv)
     if (!client->is_logged_in)
         return dputs(RESPONSE_NOT_LOGGED_IN, client->fd);
     if (strlen(command) < 7 || command[3] != ' ')
-        return dputs(RESPONSE_STX_ERROR, client->fd);
+        return dputs(RESPONSE_NOTHING_DONE, client->fd);
     if (strlen(client->cwd) + strlen(dir) + 2 > PATH_MAX)
         return dputs(RESPONSE_NOTHING_DONE, client->fd);
     dir[strlen(dir) - 2] = '\0';
@@ -71,7 +71,7 @@ client_t *client, UNUSED server_t *serv)
     if (!client->is_logged_in)
         return dputs(RESPONSE_NOT_LOGGED_IN, client->fd);
     if (strlen(command) < 7 || command[3] != ' ')
-        return dputs(RESPONSE_STX_ERROR, client->fd);
+        return dputs(RESPONSE_NOTHING_DONE, client->fd);
     if (strlen(client->cwd) + strlen(dir) + 2 > PATH_MAX)
         return dputs(RESPONSE_NOTHING_DONE, client->fd);
     dir[strlen(dir) - 2] = '\0';

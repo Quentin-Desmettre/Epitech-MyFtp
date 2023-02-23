@@ -51,10 +51,16 @@ void clean_buffer(int fd, char *buf, char *last_char, long *nb_read)
         *last_char = 0;
 }
 
-void write_buffer(int fd, char *buf, char *last_char, long nb_read)
+void write_buffer(int fd, char *buf, int read_fd, long *nb_read)
 {
-    clean_buffer(fd, buf, last_char, &nb_read);
-    write(fd, buf, nb_read);
+    char last_char = 0;
+
+    while ((*nb_read = read(read_fd, buf, BUFFER_SIZE)) > 0) {
+        clean_buffer(fd, buf, &last_char, nb_read);
+        write(fd, buf, *nb_read);
+    }
+    if (last_char == '\r')
+        write(fd, "\r", 1);
 }
 
 void get_file_from_client(client_t *client, char const *file_path)
@@ -66,18 +72,16 @@ void get_file_from_client(client_t *client, char const *file_path)
     (struct sockaddr *)&data_addr, &addrlen) : client->data_fd);
     char buf[BUFFER_SIZE];
     long nb_read;
-    char last_char = 0;
-    if (chdir(client->cwd) < 0)
-        close_client(RESPONSE_FILE_LOCAL_ERROR, client, read_fd, fd);
+
+    if (client_chdir(client) < 0)
+        close_client(RESPONSE_NOTHING_DONE, client, read_fd, fd);
     if ((fd = open(file_path, 01101, 0644)) < 0 || read_fd < 0)
         close_client(RESPONSE_NOTHING_DONE, client, read_fd, fd);
-    while ((nb_read = read(read_fd, buf, BUFFER_SIZE)) > 0)
-        write_buffer(fd, buf, &last_char, nb_read);
-    if (last_char == '\r')
-        write(fd, "\r", 1);
+    write_buffer(fd, buf, read_fd, &nb_read);
     if (nb_read < 0)
         return remove(file_path),
         close_client(RESPONSE_FILE_TRANSFER_ABORTED, client, read_fd, fd);
+    dputs(RESPONSE_FILE_TRANSFER_STARTED, client->fd);
     close_client(RESPONSE_FILE_TRANSFER_ENDED, client, read_fd, fd);
 }
 
@@ -89,10 +93,10 @@ client_t *client, UNUSED server_t *serv)
     if (!client->is_logged_in)
         return dputs(RESPONSE_NOT_LOGGED_IN, client->fd);
     if (strlen(file_path) < 2 || command[4] != ' ')
-        return dputs(RESPONSE_STX_ERROR, client->fd);
+        return dputs(RESPONSE_NOTHING_DONE, client->fd);
     file_path[strlen(file_path) - 2] = 0;
     if (client->is_passive || client->is_active)
         handle_data_connection(file_path, client, get_file_from_client);
     else
-        dputs(RESPONSE_NOTHING_DONE, client->fd);
+        dputs("425 Can't open data connection.\r\n", client->fd);
 }

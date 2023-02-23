@@ -19,6 +19,7 @@ void log_anon_user(client_t *client, char const *anon_dir)
 {
     strcpy(client->cwd, anon_dir);
     client->uname = strdup(ANON_USER_LOGIN);
+    client->root_dir = strdup(anon_dir);
     client->user_data = NULL;
     dputs(RESPONSE_USER_FOUND, client->fd);
 }
@@ -27,6 +28,7 @@ void log_regular_user(client_t *client, struct passwd *user_data, char *uname)
 {
     strcpy(client->cwd, user_data->pw_dir);
     client->user_data = user_data;
+    client->root_dir = strdup(user_data->pw_dir);
     client->uname = uname;
     dputs(RESPONSE_USER_FOUND, client->fd);
 }
@@ -37,7 +39,7 @@ void handle_user_command(char *command, client_t *client, server_t *serv)
     struct passwd *user;
 
     if (strlen(username) <= 2 || command[4] != ' ') {
-        dputs(RESPONSE_STX_ERROR, client->fd);
+        dputs(RESPONSE_NOTHING_DONE, client->fd);
         return free(username);
     }
     unlog_client(client);

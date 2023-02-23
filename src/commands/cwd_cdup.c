@@ -7,8 +7,8 @@
 
 #include "myftp.h"
 
-bool change_to_dir(char const *base_dir,
-char const *new_dir, char final_dir[PATH_MAX])
+bool change_to_dir(char const *base_dir, char const *new_dir,
+char final_dir[PATH_MAX], client_t *client)
 {
     char current_dir[PATH_MAX];
     char tmp_final_dir[PATH_MAX];
@@ -18,7 +18,9 @@ char const *new_dir, char final_dir[PATH_MAX])
         return false;
     if (chdir(base_dir) == -1)
         return false;
-    if (chdir(new_dir) == -1 || getcwd(final_dir, PATH_MAX) == NULL) {
+    if (chdir(new_dir) == -1 || getcwd(final_dir, PATH_MAX) == NULL ||
+    strlen(final_dir) < strlen(client->root_dir) ||
+    strncmp(final_dir, client->root_dir, strlen(client->root_dir))) {
         strcpy(final_dir, tmp_final_dir);
         chdir(current_dir);
         return false;
@@ -36,7 +38,7 @@ void handle_cwd_command(char *command, client_t *client, UNUSED server_t *serv)
     if (strlen(cmd) <= 2 || command[3] != ' ')
         return free(cmd), dputs(RESPONSE_NOTHING_DONE, client->fd);
     cmd[strlen(cmd) - 2] = '\0';
-    if (change_to_dir(client->cwd, cmd, client->cwd))
+    if (change_to_dir(client->cwd, cmd, client->cwd, client))
         dputs(RESPONSE_FILE_ACT_DONE, client->fd);
     else
         dputs(RESPONSE_NOTHING_DONE, client->fd);

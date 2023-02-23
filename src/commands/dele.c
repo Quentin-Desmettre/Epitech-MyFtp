@@ -16,9 +16,9 @@ client_t *client, UNUSED server_t *serv)
     if (!client->is_logged_in)
         return free(cmd), dputs(RESPONSE_NOT_LOGGED_IN, client->fd);
     if (strlen(cmd) <= 2 || command[4] != ' ')
-        return free(cmd), dputs(RESPONSE_UNKNOW_CMD, client->fd);
+        return free(cmd), dputs(RESPONSE_NOTHING_DONE, client->fd);
     if (strlen(client->cwd) + strlen(cmd) + 2 > PATH_MAX)
-        return free(cmd), dputs(RESPONSE_FILE_LOCAL_ERROR, client->fd);
+        return free(cmd), dputs(RESPONSE_NOTHING_DONE, client->fd);
     cmd[strlen(cmd) - 2] = '\0';
     filePath = malloc(strlen(client->cwd) + strlen(cmd) + 2);
     sprintf(filePath, "%s/%s", client->cwd, cmd);
