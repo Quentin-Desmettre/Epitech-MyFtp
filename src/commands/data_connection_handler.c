@@ -71,7 +71,8 @@ void (*data_sender)(client_t *, char const *))
     selected = (client->is_passive ?
     my_select(client->data_fd + 1, &readfds, NULL, NULL) : 1);
     if (selected <= 0)
-        return dputs(RESPONSE_NOTHING_DONE, client->fd);
+        return (void)dprintf(client->fd, "550 Requested action not taken, cannot "
+       "use passsive or active mode.\r\n");
     pid = fork();
     if (pid == -1)
         return dputs(RESPONSE_NOTHING_DONE, client->fd);

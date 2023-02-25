@@ -6,37 +6,48 @@
 */
 
 #include "myftp.h"
+#include <dirent.h>
 
 static void close_client_f(char const *message,
-client_t *client, int write_fd, FILE *f)
+client_t *client, int write_fd)
 {
     dputs(message, client->fd);
     close(client->data_fd);
     close(write_fd);
-    fclose(f);
     exit(0);
+}
+
+char *getcmd(char const *file)
+{
+    char *cmd = calloc(strlen(file) + 7, sizeof(char));
+
+    if (!cmd)
+        return NULL;
+    sprintf(cmd, "ls -l %s", file);
+    return cmd;
 }
 
 void send_list_to_client(client_t *client, char const *file)
 {
     struct sockaddr_in data_addr;
     UNUSED socklen_t addrlen = sizeof(data_addr);
-    int fd;
     int write_fd = (client->is_passive ? accept(client->data_fd,
     (struct sockaddr *)&data_addr, &addrlen) : client->data_fd);
-    FILE *file_buf;
-    char cmd_buf[PATH_MAX + 10];
+    char *cmd = getcmd(file);
+    FILE *f;
+    char buf[4096];
 
-    if (chdir(client->cwd) < 0 || strlen(file) > PATH_MAX)
-        close_client_f(RESPONSE_FILE_LOCAL_ERROR, client, write_fd, NULL);
-    strcpy(cmd_buf, "ls -l ");
-    strcat(cmd_buf, file);
-    file_buf = popen(cmd_buf, "r");
-    if (!file_buf || write_fd < 0 || (fd = fileno(file_buf)) < 0)
-        close_client_f(RESPONSE_NOTHING_DONE, client, write_fd, file_buf);
-    fd = dup(fd);
-    fclose(file_buf);
-    send_fd_data_to_client(client, fd, write_fd);
+    if (write_fd < 0)
+        return free(cmd), close_client_f("425 Can't "
+        "open data connection.\r\n", client, 0);
+    if (!cmd || access(file, F_OK) == -1 || !(f = popen(cmd, "r")))
+        return free(cmd), close_client_f(RESPONSE_NOTHING_DONE,
+        client, write_fd);
+    while (fgets(buf, 4096, f))
+        dprintf(write_fd, "%s", buf);
+    pclose(f);
+    dprintf(client->fd, RESPONSE_FILE_TRANSFER_STARTED, file);
+    close_client_f(RESPONSE_FILE_TRANSFER_ENDED, client, write_fd);
 }
 
 void handle_list_command(char *command,
@@ -47,7 +58,7 @@ client_t *client, UNUSED server_t *serv)
     if (!client->is_logged_in)
         return dputs(RESPONSE_NOT_LOGGED_IN, client->fd);
     if ((strlen(path) < 2 || command[4] != ' ') && strcmp(command, "LIST\r\n"))
-        return dputs(RESPONSE_STX_ERROR, client->fd);
+        return dputs(RESPONSE_NOTHING_DONE, client->fd);
     if (!strcmp(command, "LIST\r\n"))
         path = ".";
     else
@@ -55,5 +66,5 @@ client_t *client, UNUSED server_t *serv)
     if (client->is_passive || client->is_active)
         handle_data_connection(path, client, send_list_to_client);
     else
-        dputs(RESPONSE_NOTHING_DONE, client->fd);
+        dputs("425 Can't open data connection.\r\n", client->fd);
 }
