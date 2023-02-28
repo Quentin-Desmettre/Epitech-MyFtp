@@ -40,9 +40,11 @@ void send_list_to_client(client_t *client, char const *file)
     if (write_fd < 0)
         return free(cmd), close_client_f("425 Can't "
         "open data connection.\r\n", client, 0);
-    if (!cmd || access(file, F_OK) == -1 || !(f = popen(cmd, "r")))
+    if (!cmd || access(file, F_OK) == -1 || client_chdir(client) < 0 ||
+    !(f = popen(cmd, "r")))
         return free(cmd), close_client_f(RESPONSE_NOTHING_DONE,
         client, write_fd);
+    system("pwd");
     while (fgets(buf, 4096, f))
         dprintf(write_fd, "%s", buf);
     pclose(f);
