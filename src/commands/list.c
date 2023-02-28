@@ -19,11 +19,11 @@ client_t *client, int write_fd)
 
 char *getcmd(char const *file)
 {
-    char *cmd = calloc(strlen(file) + 7, sizeof(char));
+    char *cmd = calloc(strlen(file) + 23, sizeof(char));
 
     if (!cmd)
         return NULL;
-    sprintf(cmd, "ls -l %s", file);
+    sprintf(cmd, "ls -l %s | sed -n '1d;p'", file);
     return cmd;
 }
 

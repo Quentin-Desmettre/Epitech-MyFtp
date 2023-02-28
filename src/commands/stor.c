@@ -77,11 +77,11 @@ void get_file_from_client(client_t *client, char const *file_path)
         close_client(RESPONSE_NOTHING_DONE, client, read_fd, fd);
     if ((fd = open(file_path, 01101, 0644)) < 0 || read_fd < 0)
         close_client(RESPONSE_NOTHING_DONE, client, read_fd, fd);
+    dputs(RESPONSE_FILE_TRANSFER_STARTED, client->fd);
     write_buffer(fd, buf, read_fd, &nb_read);
     if (nb_read < 0)
         return remove(file_path),
         close_client(RESPONSE_FILE_TRANSFER_ABORTED, client, read_fd, fd);
-    dputs(RESPONSE_FILE_TRANSFER_STARTED, client->fd);
     close_client(RESPONSE_FILE_TRANSFER_ENDED, client, read_fd, fd);
 }
 

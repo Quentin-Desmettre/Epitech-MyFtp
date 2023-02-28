@@ -64,16 +64,8 @@ void send_fd_data_to_client(client_t *client, int fd, int write_fd)
 void handle_data_connection(char const *data, client_t *client,
 void (*data_sender)(client_t *, char const *))
 {
-    fd_set readfds = init_fd_set(client->data_fd);
-    int selected;
-    int pid;
+    int pid = fork();
 
-    selected = (client->is_passive ?
-    my_select(client->data_fd + 1, &readfds, NULL, NULL) : 1);
-    if (selected <= 0)
-        return (void)dprintf(client->fd, "550 Requested action not taken, cannot "
-       "use passsive or active mode.\r\n");
-    pid = fork();
     if (pid == -1)
         return dputs(RESPONSE_NOTHING_DONE, client->fd);
     if (pid == 0)
