@@ -56,16 +56,20 @@ void handle_list_command(char *cmd,
 client_t *client, UNUSED server_t *serv)
 {
     char *path = cmd + 5;
+    DIR *dir;
 
     if (!client->is_logged_in)
         return dputs(RESPONSE_NOT_LOGGED_IN, client->fd);
-    if (((strlen(path) < 2 || cmd[4] != ' ') && strcmp(cmd, "LIST\r\n"))
-    || access(path, R_OK) == -1)
-        return dputs(RESPONSE_NOTHING_DONE, client->fd);
     if (!strcmp(cmd, "LIST\r\n"))
         path = ".";
     else
         path[strlen(path) - 2] = 0;
+    dir = opendir(path);
+    if (((strlen(path) < 2 || cmd[4] != ' ') && strcasecmp(cmd, "LIST\r\n"))
+    || !dir)
+        return (dir ? closedir(dir) : (void)0),
+        dputs(RESPONSE_NOTHING_DONE, client->fd);
+    closedir(dir);
     if (client->is_passive || client->is_active)
         handle_data_connection(path, client, send_list_to_client);
     else

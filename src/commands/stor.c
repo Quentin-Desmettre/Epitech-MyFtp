@@ -89,12 +89,16 @@ void handle_stor_command(char *command,
 client_t *client, UNUSED server_t *serv)
 {
     char *file_path = command + 5;
+    int fd;
 
     if (!client->is_logged_in)
         return dputs(RESPONSE_NOT_LOGGED_IN, client->fd);
-    if (strlen(file_path) < 2 || command[4] != ' ' || access(file_path, W_OK))
+    if (strlen(file_path) < 2 || command[4] != ' ')
         return dputs(RESPONSE_NOTHING_DONE, client->fd);
     file_path[strlen(file_path) - 2] = 0;
+    if ((fd = open(file_path, 01101, 0644)) < 0)
+        return dputs(RESPONSE_NOTHING_DONE, client->fd);
+    close(fd);
     if (client->is_passive || client->is_active)
         handle_data_connection(file_path, client, get_file_from_client);
     else
