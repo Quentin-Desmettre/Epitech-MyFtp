@@ -9,11 +9,13 @@
 #include <dirent.h>
 
 static void close_client_f(char const *message,
-client_t *client, int write_fd)
+client_t *client, int write_fd, FILE *f)
 {
     dputs(message, client->fd);
     close(client->data_fd);
     close(write_fd);
+    if (f)
+        pclose(f);
     exit(0);
 }
 
@@ -34,34 +36,33 @@ void send_list_to_client(client_t *client, char const *file)
     int write_fd = (client->is_passive ? accept(client->data_fd,
     (struct sockaddr *)&data_addr, &addrlen) : client->data_fd);
     char *cmd = getcmd(file);
-    FILE *f;
+    FILE *f = NULL;
     char buf[4096];
 
+    if (!cmd || client_chdir(client) < 0 || !(f = popen(cmd, "r")))
+        return free(cmd), close_client_f(RESPONSE_NOTHING_DONE,
+        client, write_fd, f);
     if (write_fd < 0)
         return free(cmd), close_client_f("425 Can't "
-        "open data connection.\r\n", client, 0);
-    if (!cmd || access(file, F_OK) == -1 || client_chdir(client) < 0 ||
-    !(f = popen(cmd, "r")))
-        return free(cmd), close_client_f(RESPONSE_NOTHING_DONE,
-        client, write_fd);
-    system("pwd");
+        "open data connection.\r\n", client, 0, f);
     while (fgets(buf, 4096, f))
         dprintf(write_fd, "%s", buf);
     pclose(f);
     dprintf(client->fd, RESPONSE_FILE_TRANSFER_STARTED, file);
-    close_client_f(RESPONSE_FILE_TRANSFER_ENDED, client, write_fd);
+    close_client_f(RESPONSE_FILE_TRANSFER_ENDED, client, write_fd, NULL);
 }
 
-void handle_list_command(char *command,
+void handle_list_command(char *cmd,
 client_t *client, UNUSED server_t *serv)
 {
-    char *path = command + 5;
+    char *path = cmd + 5;
 
     if (!client->is_logged_in)
         return dputs(RESPONSE_NOT_LOGGED_IN, client->fd);
-    if ((strlen(path) < 2 || command[4] != ' ') && strcmp(command, "LIST\r\n"))
+    if (((strlen(path) < 2 || cmd[4] != ' ') && strcmp(cmd, "LIST\r\n"))
+    || access(path, R_OK) == -1)
         return dputs(RESPONSE_NOTHING_DONE, client->fd);
-    if (!strcmp(command, "LIST\r\n"))
+    if (!strcmp(cmd, "LIST\r\n"))
         path = ".";
     else
         path[strlen(path) - 2] = 0;

@@ -30,7 +30,7 @@ client_t *client, UNUSED server_t *serv)
 
     if (!client->is_logged_in)
         return dputs(RESPONSE_NOT_LOGGED_IN, client->fd);
-    if (strlen(file_path) < 2 || command[4] != ' ')
+    if (strlen(file_path) < 2 || command[4] != ' ' || access(file_path, R_OK))
         return dputs(RESPONSE_NOTHING_DONE, client->fd);
     file_path[strlen(file_path) - 2] = 0;
     if (client->is_passive || client->is_active)

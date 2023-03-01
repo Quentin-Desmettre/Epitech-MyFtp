@@ -53,10 +53,8 @@ void send_fd_data_to_client(client_t *client, int fd, int write_fd)
         if (!send_file_content(buf, nb_read, write_fd))
             close_client(RESPONSE_FILE_TRANSFER_ABORTED,
             client, write_fd, fd);
-    if (nb_read < 0) {
-        dprintf(write_fd, "error while reading\r\n");
+    if (nb_read < 0)
         close_client(RESPONSE_NOTHING_DONE, client, write_fd, fd);
-    }
     dputs(RESPONSE_FILE_TRANSFER_STARTED, client->fd);
     close_client(RESPONSE_FILE_TRANSFER_ENDED, client, write_fd, fd);
 }
